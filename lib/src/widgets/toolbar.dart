@@ -1,10 +1,10 @@
 import 'dart:io';
 
+import 'package:editorjs_flutter/src/widgets/components/textcomponent.dart';
+import 'package:editorjs_flutter/src/widgets/editor.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:editorjs_flutter/src/widgets/editor.dart';
-import 'package:editorjs_flutter/src/widgets/components/textcomponent.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EditorJSToolbar extends StatefulWidget {
@@ -22,106 +22,6 @@ class EditorJSToolbarState extends State<EditorJSToolbar> {
   EditorJSEditorState? parent;
 
   EditorJSToolbarState(parent);
-
-  void changeHeader() {
-    setState(
-      () {
-        if (headerSize > 5) {
-          headerSize = 1;
-        } else {
-          headerSize++;
-        }
-      },
-    );
-  }
-
-  Future<void> getImageFromCamera() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-    setState(
-      () {
-        if (pickedFile != null) {
-          sendImageToEditor(pickedFile);
-        } else {
-          print('No image selected.');
-        }
-      },
-    );
-  }
-
-  Future<void> getImageFromGallery() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    setState(
-      () {
-        if (pickedFile != null) {
-          sendImageToEditor(pickedFile);
-        } else {
-          print('No image selected.');
-        }
-      },
-    );
-  }
-
-  void sendImageToEditor(pickedFile) {
-    parent!.setState(
-      () {
-        parent!.items.add(
-          Row(
-            children: [
-              Image.file(
-                File(pickedFile.path),
-                fit: BoxFit.fill,
-                width: MediaQuery.of(context).size.width - 20,
-              )
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void addText() {
-    parent!.setState(
-      () {
-        parent!.items.add(
-          Row(children: <Widget>[TextComponent.addText()]),
-        );
-      },
-    );
-  }
-
-  void openBottom(context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return Container(
-          child: Wrap(
-            children: <Widget>[
-              ListTile(
-                leading: Icon(Icons.camera),
-                title: const Text("Camera"),
-                onTap: () => getImageFromCamera(),
-              ),
-              ListTile(
-                leading: Icon(Icons.image),
-                title: const Text("Gallery"),
-                onTap: () => getImageFromGallery(),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void addLine() {
-    parent!.setState(() {
-      parent!.items.add(Row(
-        children: [Expanded(child: Divider(color: Colors.grey))],
-      ));
-    });
-  }
 
   void addHyperlink(context) {
     var title = TextEditingController();
@@ -151,8 +51,7 @@ class EditorJSToolbarState extends State<EditorJSToolbar> {
               padding: EdgeInsets.only(left: 20.0, right: 20.00),
               child: ElevatedButton(
                 style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.blue),
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
                 ),
                 child: const Text(
                   "Add Link",
@@ -170,8 +69,7 @@ class EditorJSToolbarState extends State<EditorJSToolbar> {
                                   TextSpan(
                                     text: title.text,
                                     style: TextStyle(color: Colors.blue),
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () => launch(url.text),
+                                    recognizer: TapGestureRecognizer()..onTap = () => launchUrl(Uri(host: url.text)),
                                   ),
                                 ],
                               ),
@@ -191,11 +89,24 @@ class EditorJSToolbarState extends State<EditorJSToolbar> {
     );
   }
 
+  void addLine() {
+    parent!.setState(() {
+      parent!.items.add(Row(
+        children: [Expanded(child: Divider(color: Colors.grey))],
+      ));
+    });
+  }
+
   void addListBlock() {}
 
-  @override
-  void dispose() {
-    super.dispose();
+  void addText() {
+    parent!.setState(
+      () {
+        parent!.items.add(
+          Row(children: <Widget>[TextComponent.addText()]),
+        );
+      },
+    );
   }
 
   @override
@@ -210,10 +121,7 @@ class EditorJSToolbarState extends State<EditorJSToolbar> {
                 padding: EdgeInsets.all(10.0),
                 child: Text(
                   "T",
-                  style: TextStyle(
-                      color: Colors.black38,
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Colors.black38, fontSize: 20.0, fontWeight: FontWeight.bold),
                 )),
           ),
           GestureDetector(
@@ -222,10 +130,7 @@ class EditorJSToolbarState extends State<EditorJSToolbar> {
                 padding: EdgeInsets.all(10.0),
                 child: Text(
                   "H" + headerSize.toString(),
-                  style: TextStyle(
-                      color: Colors.black38,
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Colors.black38, fontSize: 20.0, fontWeight: FontWeight.bold),
                 )),
           ),
           Padding(
@@ -274,6 +179,93 @@ class EditorJSToolbarState extends State<EditorJSToolbar> {
           )
         ],
       ),
+    );
+  }
+
+  void changeHeader() {
+    setState(
+      () {
+        if (headerSize > 5) {
+          headerSize = 1;
+        } else {
+          headerSize++;
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  Future<void> getImageFromCamera() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+    setState(
+      () {
+        if (pickedFile != null) {
+          sendImageToEditor(pickedFile);
+        } else {
+          print('No image selected.');
+        }
+      },
+    );
+  }
+
+  Future<void> getImageFromGallery() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    setState(
+      () {
+        if (pickedFile != null) {
+          sendImageToEditor(pickedFile);
+        } else {
+          print('No image selected.');
+        }
+      },
+    );
+  }
+
+  void openBottom(context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.camera),
+                title: const Text("Camera"),
+                onTap: () => getImageFromCamera(),
+              ),
+              ListTile(
+                leading: Icon(Icons.image),
+                title: const Text("Gallery"),
+                onTap: () => getImageFromGallery(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void sendImageToEditor(pickedFile) {
+    parent!.setState(
+      () {
+        parent!.items.add(
+          Row(
+            children: [
+              Image.file(
+                File(pickedFile.path),
+                fit: BoxFit.fill,
+                width: MediaQuery.of(context).size.width - 20,
+              )
+            ],
+          ),
+        );
+      },
     );
   }
 }
