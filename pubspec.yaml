@@ -10,9 +10,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_html: ^3.0.0-beta.2
-  image_picker: ^1.0.5
-  url_launcher: ^6.1.6
+  flutter_html: 3.0.0-beta.2
+  image_picker: 1.0.5
+  url_launcher: 6.2.2
 
 dev_dependencies:
   flutter_test:

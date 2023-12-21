@@ -1,12 +1,10 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:editorjs_flutter/src/model/EditorJSCSSTag.dart';
 import 'package:editorjs_flutter/src/model/EditorJSData.dart';
 import 'package:editorjs_flutter/src/model/EditorJSViewStyles.dart';
-import 'package:editorjs_flutter/src/model/EditorJSCSSTag.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:flutter_html/style.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class EditorJSView extends StatefulWidget {
@@ -25,6 +23,48 @@ class EditorJSViewState extends State<EditorJSView> {
   late EditorJSViewStyles styles;
   final List<Widget> items = <Widget>[];
   late Map<String, Style> customStyleMap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: items);
+  }
+
+  HtmlPaddings convertEdgeInsetsToHtmlPaddings(EdgeInsets? edgeInsets) {
+    if (edgeInsets == null) {
+      return HtmlPaddings.zero;
+    }
+
+    return HtmlPaddings(
+      top: HtmlPadding(edgeInsets.top),
+      bottom: HtmlPadding(edgeInsets.bottom),
+      left: HtmlPadding(edgeInsets.left),
+      right: HtmlPadding(edgeInsets.right),
+    );
+  }
+
+  Map<String, Style> generateStylemap(List<EditorJSCSSTag> styles) {
+    Map<String, Style> map = <String, Style>{};
+
+    styles.forEach(
+      (element) {
+        map.putIfAbsent(
+          element.tag.toString(),
+          () => Style(
+            backgroundColor: (element.backgroundColor != null) ? getColor(element.backgroundColor!) : null,
+            color: (element.color != null) ? getColor(element.color!) : null,
+            padding: (element.padding != null) ? convertEdgeInsetsToHtmlPaddings(EdgeInsets.all(element.padding!)) : HtmlPaddings.zero,
+          ),
+        );
+      },
+    );
+
+    return map;
+  }
+
+  Color getColor(String hexColor) {
+    final hexCode = hexColor.replaceAll('#', '');
+    return Color(int.parse('$hexCode', radix: 16));
+  }
 
   @override
   void initState() {
@@ -75,9 +115,9 @@ class EditorJSViewState extends State<EditorJSView> {
                 items.add(Html(
                   data: element.data!.text,
                   style: customStyleMap,
-                  onLinkTap: (url, context, attributes, element) async {
+                  onLinkTap: (url, attributes, element) async {
                     if (url != null && await canLaunchUrlString(url)) {
-                      await launchUrlString(url);
+                      launchUrlString(url);
                     }
                   },
                 ));
@@ -97,9 +137,9 @@ class EditorJSViewState extends State<EditorJSView> {
                               child: Html(
                             data: bullet + element,
                             style: customStyleMap,
-                            onLinkTap: (url, context, attributes, element) async {
+                            onLinkTap: (url, attributes, element) async {
                               if (url != null && await canLaunchUrlString(url)) {
-                                await launchUrlString(url);
+                                launchUrlString(url);
                               }
                             },
                           ))
@@ -114,9 +154,9 @@ class EditorJSViewState extends State<EditorJSView> {
                               child: Html(
                                 data: bullet + element,
                                 style: customStyleMap,
-                                onLinkTap: (url, context, attributes, element) async {
+                                onLinkTap: (url, attributes, element) async {
                                   if (url != null && await canLaunchUrlString(url)) {
-                                    await launchUrlString(url);
+                                    launchUrlString(url);
                                   }
                                 },
                               ),
@@ -143,32 +183,5 @@ class EditorJSViewState extends State<EditorJSView> {
         );
       },
     );
-  }
-
-  Map<String, Style> generateStylemap(List<EditorJSCSSTag> styles) {
-    Map<String, Style> map = <String, Style>{};
-
-    styles.forEach(
-      (element) {
-        map.putIfAbsent(
-            element.tag.toString(),
-            () => Style(
-                backgroundColor: (element.backgroundColor != null) ? getColor(element.backgroundColor!) : null,
-                color: (element.color != null) ? getColor(element.color!) : null,
-                padding: (element.padding != null) ? EdgeInsets.all(element.padding!) : null));
-      },
-    );
-
-    return map;
-  }
-
-  Color getColor(String hexColor) {
-    final hexCode = hexColor.replaceAll('#', '');
-    return Color(int.parse('$hexCode', radix: 16));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(children: items);
   }
 }
